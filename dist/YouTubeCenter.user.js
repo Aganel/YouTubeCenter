@@ -1,4 +1,4 @@
-﻿/**
+/**
   The MIT License (MIT)
 
   Copyright © 2015 Jeppe Rune Mortensen
@@ -24,7 +24,7 @@
 // @id              YouTubeCenter
 // @name            YouTube Center Developer Build
 // @namespace       http://www.facebook.com/YouTubeCenter
-// @version         533
+// @version         533a1
 // @author          Jeppe Rune Mortensen <jepperm@gmail.com>
 // @description     YouTube Center Developer Build contains all kind of different useful functions which makes your visit on YouTube much more entertaining.
 // @icon            https://raw.github.com/YePpHa/YouTubeCenter/master/assets/icon48.png
@@ -19826,6 +19826,7 @@
       }
     };
     ytcenter.video.getFilename = function(stream){
+      con.log(">>>>>> ytcenter.video.getFilename <<<<<<");
       if (stream == null) return "";
       var duration = 0;
       var pubtimestamp = 0, pubsecs = 0, pubmins = 0, pubhours = 0, pubdays = 0, pubmonth = 0, pubyear = 0;
@@ -19857,6 +19858,28 @@
         pubdays = 0;
         pubmonth = 0;
         pubyear = 0;
+      }
+      // если данные о времени публикации видео неопределены
+      if (pubtimestamp == 0) {
+        con.log(">>>>>> zero pubtimestamp <<<<<<");
+        try {
+          // пытаемся извлечь их из тегов
+          var metas = document.getElementsByTagName("meta");
+          for (var i=0; i<metas.length; i++) {  
+            if (metas[i].getAttribute("itemprop") && 
+                metas[i].getAttribute("itemprop")==="datePublished") {
+              //con.log(">>>>>> content:" + metas[i].getAttribute("content") + " <<<<<<");
+              var parts = metas[i].getAttribute("content").split('-');
+              // new Date(year, month [, day [, hours[, minutes[, seconds[, ms]]]]])
+              pubyear = parts[0];
+              pubmonth = parts[1];
+              pubdays = parts[2];
+              ytcenter.video.published = new Date(parts[0], parts[1]-1, parts[2]); // Note: months are 0-based
+            }
+          }
+        } catch (e) {
+          con.log(">>>>>> Error getting date from meta tag <<<<<<");
+        }
       }
       try {
         var now = new Date();
@@ -19916,6 +19939,7 @@
         pubmonth: ytcenter.utils.prefixText(pubmonth, "0", 2),
         pubyear: pubyear
       });
+      con.log(">>>>>> filename: " + filename + " <<<<<<");
       
       // Removing illegal characters for filename for OS
       if (uw.navigator.appVersion.toLowerCase().indexOf("win") != -1) {
@@ -21909,6 +21933,7 @@
       
       if (page === "watch") {
         var ___callback = function(response){
+          con.log(">>>>>> ___callback <<<<<<");
           try {
             var txt = response.responseText;
             if (txt) {
